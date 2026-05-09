@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1023"/>
+      <stop offset="1" stop-color="#111C44"/>
+    </linearGradient>
+
+    <linearGradient id="accent" x1="160" y1="120" x2="360" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C6CFF"/>
+      <stop offset="1" stop-color="#B38CFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Main T -->
+  <path
+    d="M140 130C140 118.954 148.954 110 160 110H352C363.046 110 372 118.954 372 130V165C372 176.046 363.046 185 352 185H285V375C285 386.046 276.046 395 265 395H220C208.954 395 200 386.046 200 375V185H160C148.954 185 140 176.046 140 165V130Z"
+    fill="white"
+  />
+
+  <!-- Accent Shape -->
+  <path
+    d="M285 185H352C363.046 185 372 176.046 372 165V145C372 134 365 126 355 122C334 136 311 159 294 183C291 187 288 191 285 195V185Z"
+    fill="url(#accent)"
+  />
+
+  <path
+    d="M255 250C225 280 210 320 210 395H265C276.046 395 285 386.046 285 375V215C275 225 265 237 255 250Z"
+    fill="url(#accent)"
+  />
+</svg>
