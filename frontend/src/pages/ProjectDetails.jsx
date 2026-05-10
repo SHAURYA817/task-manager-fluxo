@@ -1,15 +1,18 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../api/axios.js";
+import toast from "react-hot-toast";
 
 function ProjectDetails() {
   const { id } = useParams();
 
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [memberEmail, setMemberEmail] = useState("");
-  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [memberEmail, setMemberEmail] =
+    useState("");
+
+  const [showTaskModal, setShowTaskModal] =
+    useState(false);
 
   const [taskForm, setTaskForm] = useState({
     title: "",
@@ -19,52 +22,88 @@ function ProjectDetails() {
     status: "To Do",
   });
 
+  const currentUser = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  const currentUserId =
+    currentUser?._id ||
+    currentUser?.user?._id ||
+    currentUser?.id;
+
+  useEffect(() => {
+    fetchProject();
+    fetchTasks();
+  }, [id]);
+
   const fetchProject = async () => {
     try {
       const res = await API.get(`/projects/${id}`);
+
       setProject(res.data);
     } catch (error) {
       console.log(error);
+
+      toast.error("Failed to load workspace");
     }
   };
 
   const fetchTasks = async () => {
     try {
       const res = await API.get("/tasks");
-      const filteredTasks = (res.data.tasks || []).filter(
+
+      const filteredTasks = (
+        res.data.tasks || []
+      ).filter(
         (task) => task.project?._id === id
       );
+
       setTasks(filteredTasks);
     } catch (error) {
       console.log(error);
+
+      toast.error("Failed to load tasks");
     }
   };
 
-  useEffect(() => {
-    fetchProject();
-    fetchTasks();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
   const handleAddMember = async () => {
-    if (!memberEmail) return;
+    if (!memberEmail) {
+      toast.error("Enter member email");
+
+      return;
+    }
 
     try {
-      await API.post(`/projects/${id}/add-member`, {
-        email: memberEmail,
-        role: "Member",
-      });
+      await API.post(
+        `/projects/${id}/add-member`,
+        {
+          email: memberEmail,
+          role: "Member",
+        }
+      );
+
+      toast.success("Member added");
 
       setMemberEmail("");
+
       fetchProject();
     } catch (error) {
-      alert(error.response?.data?.message || "Add member failed");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to add member"
+      );
     }
   };
 
   const handleAddTask = async () => {
-    if (!taskForm.title || !taskForm.assignedTo) {
-      alert("Please enter title and assign member");
+    if (
+      !taskForm.title ||
+      !taskForm.assignedTo
+    ) {
+      toast.error(
+        "Please complete all required fields"
+      );
+
       return;
     }
 
@@ -79,6 +118,8 @@ function ProjectDetails() {
         dueDate: new Date(),
       });
 
+      toast.success("Task created");
+
       setShowTaskModal(false);
 
       setTaskForm({
@@ -91,133 +132,180 @@ function ProjectDetails() {
 
       fetchTasks();
     } catch (error) {
-      alert(error.response?.data?.message || "Task add failed");
+      toast.error(
+        error.response?.data?.message ||
+          "Task creation failed"
+      );
     }
   };
 
-  const handleRemoveMember = async (userId) => {
-    const confirmRemove = window.confirm("Remove this member?");
-    if (!confirmRemove) return;
-
+  const handleRemoveMember = async (
+    userId
+  ) => {
     try {
-      await API.delete(`/projects/${id}/remove-member/${userId}`);
+      await API.delete(
+        `/projects/${id}/remove-member/${userId}`
+      );
 
       setProject((prev) => ({
         ...prev,
-        members: prev.members.filter((member) => member.user._id !== userId),
+        members: prev.members.filter(
+          (member) =>
+            member.user._id !== userId
+        ),
       }));
 
-      setTasks((prev) =>
-        prev.filter((task) => task.assignedTo?._id !== userId)
-      );
+      toast.success("Member removed");
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error("Failed to remove member");
     }
   };
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        Loading project...
+      <div className="min-h-screen bg-[#01030a] text-white flex items-center justify-center">
+        Loading workspace...
       </div>
     );
   }
 
+  const isAdmin = project?.members?.some(
+    (member) => {
+      const memberUserId =
+        member.user?._id || member.user;
+
+      return (
+        String(memberUserId) ===
+          String(currentUserId) &&
+        String(
+          member.role
+        ).toLowerCase() === "admin"
+      );
+    }
+  );
+
   return (
-  <div className="relative min-h-screen bg-black text-white overflow-hidden">
-    {/* Background */}
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#312e81,transparent_35%)] opacity-40" />
+    <div className="min-h-screen bg-[#01040c] text-white relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#2563eb22,transparent_35%)]" />
 
-    <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:70px_70px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:70px_70px]" />
 
-    {/* Glow */}
-    <div className="absolute top-10 right-10 w-96 h-96 bg-violet-500/20 blur-[120px] rounded-full" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 blur-[120px] rounded-full" />
 
-    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
-      <div className="mb-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-        <div>
-          <Link
-            to="/projects"
-            className="text-sm text-white/40 hover:text-white transition"
-          >
-            ← Back to Projects
-          </Link>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-violet-500/20 blur-[120px] rounded-full" />
 
-          <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight mt-4">
-            {project.name}
-          </h1>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8 mb-10">
+          <div>
+            <Link
+              to="/projects"
+              className="text-sm text-white/40 hover:text-white transition"
+            >
+              ← Return to Workspace
+            </Link>
 
-          <p className="text-white/50 mt-4 text-lg max-w-3xl leading-relaxed">
-            {project.description || "No description added"}
-          </p>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mt-5 leading-none tracking-tight">
+              {project.name}
+            </h1>
 
-          <p className="text-white/30 text-sm mt-4">
-            Created on{" "}
-            {project.createdAt
-              ? new Date(project.createdAt).toLocaleDateString()
-              : "N/A"}
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowTaskModal(true)}
-          className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 font-medium hover:scale-[1.02] transition"
-        >
-          Add Task
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-        <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[28px] p-6">
-          <p className="text-white/40 text-sm">Total Members</p>
-
-          <h2 className="text-5xl font-semibold mt-4">
-            {project.members?.length || 0}
-          </h2>
-        </div>
-
-        <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[28px] p-6">
-          <p className="text-white/40 text-sm">Created By</p>
-
-          <h2 className="text-2xl font-semibold mt-4">
-            {project.createdBy?.name || "N/A"}
-          </h2>
-        </div>
-
-        <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[28px] p-6">
-          <p className="text-white/40 text-sm">Status</p>
-
-          <h2 className="text-5xl font-semibold mt-4">
-            Active
-          </h2>
-        </div>
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.8fr] gap-6">
-        {/* Tasks */}
-        <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[32px] overflow-hidden">
-          <div className="p-6 border-b border-white/10">
-            <h2 className="text-3xl font-semibold">
-              Project Tasks
-            </h2>
-
-            <p className="text-white/40 mt-2">
-              Manage and track all project tasks.
+            <p className="text-white/50 mt-5 max-w-3xl leading-relaxed">
+              {project.description ||
+                "No workspace description available."}
             </p>
+
+            <div className="flex flex-wrap gap-3 mt-6">
+              <div className="px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-sm">
+                Live Workspace
+              </div>
+
+              <div className="px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm">
+                Team Active
+              </div>
+            </div>
           </div>
 
-          <div className="p-6">
-            {tasks.length === 0 ? (
-              <div className="border border-white/10 bg-white/[0.03] rounded-3xl p-10 text-center">
-                <h2 className="text-2xl font-semibold">
-                  No tasks yet
+          {isAdmin && (
+            <button
+              onClick={() =>
+                setShowTaskModal(true)
+              }
+              className="w-full sm:w-auto px-7 py-4 rounded-3xl bg-gradient-to-r from-blue-500 to-violet-500 font-semibold hover:scale-[1.02] transition"
+            >
+              + Create Mission
+            </button>
+          )}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
+          <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-7">
+            <p className="text-white/40 text-sm">
+              Team Members
+            </p>
+
+            <h2 className="text-5xl font-black mt-4">
+              {project.members?.length || 0}
+            </h2>
+          </div>
+
+          <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-7">
+            <p className="text-white/40 text-sm">
+              Total Missions
+            </p>
+
+            <h2 className="text-5xl font-black mt-4">
+              {tasks.length}
+            </h2>
+          </div>
+
+          <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-7">
+            <p className="text-white/40 text-sm">
+              Workspace Status
+            </p>
+
+            <h2 className="text-3xl font-black mt-5">
+              Active
+            </h2>
+          </div>
+
+          <div className="rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-7">
+            <p className="text-white/40 text-sm">
+              Created By
+            </p>
+
+            <h2 className="text-2xl font-bold mt-5 break-words">
+              {project.createdBy?.name ||
+                "Unknown"}
+            </h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_0.75fr] gap-7">
+          {/* Tasks */}
+          <div className="rounded-[40px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold">
+                  Missions
                 </h2>
 
-                <p className="text-white/50 mt-3">
-                  Create your first task to start collaborating.
+                <p className="text-white/40 mt-2">
+                  Track and manage workspace
+                  tasks.
+                </p>
+              </div>
+
+              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm">
+                {tasks.length} Tasks
+              </div>
+            </div>
+
+            {tasks.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/10 p-10 text-center">
+                <p className="text-white/50">
+                  No missions created yet.
                 </p>
               </div>
             ) : (
@@ -225,242 +313,335 @@ function ProjectDetails() {
                 {tasks.map((task) => (
                   <div
                     key={task._id}
-                    className="border border-white/10 bg-white/[0.03] rounded-3xl p-6 hover:bg-white/[0.05] transition"
+                    className="group rounded-[30px] border border-white/10 bg-black/20 p-6 hover:border-blue-500/20 transition"
                   >
-                    <div className="flex flex-wrap gap-3 mb-5">
-                      <span className="px-4 py-2 rounded-full text-xs bg-gradient-to-r from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 text-indigo-300">
-                        {task.priority || "Medium"}
-                      </span>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
+                      <div className="min-w-0">
+                        <h3 className="text-2xl font-bold break-words">
+                          {task.title}
+                        </h3>
 
-                      <span className="px-4 py-2 rounded-full text-xs border border-white/10 bg-white/[0.03]">
-                        {task.status || "To Do"}
-                      </span>
+                        <p className="text-white/50 mt-3 leading-relaxed">
+                          {task.description ||
+                            "No description"}
+                        </p>
+                      </div>
+
+                      <div className="px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm whitespace-nowrap">
+                        {task.priority}
+                      </div>
                     </div>
 
-                    <h3 className="text-2xl font-semibold">
-                      {task.title}
-                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-7">
+                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+                        <p className="text-white/40 text-xs uppercase tracking-[2px]">
+                          Status
+                        </p>
 
-                    <p className="text-white/50 mt-3 leading-relaxed">
-                      {task.description || "No description"}
-                    </p>
+                        <h4 className="font-semibold mt-2">
+                          {task.status}
+                        </h4>
+                      </div>
 
-                    <div className="mt-5 flex flex-wrap gap-5 text-sm text-white/40">
-                      <span>
-                        Assigned To:{" "}
-                        {task.assignedTo?.name || "N/A"}
-                      </span>
+                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+                        <p className="text-white/40 text-xs uppercase tracking-[2px]">
+                          Assigned
+                        </p>
 
-                      <span>
-                        Due:{" "}
-                        {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString()
-                          : "N/A"}
-                      </span>
+                        <h4 className="font-semibold mt-2 break-words">
+                          {task.assignedTo?.name ||
+                            "N/A"}
+                        </h4>
+                      </div>
+
+                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+                        <p className="text-white/40 text-xs uppercase tracking-[2px]">
+                          Priority
+                        </p>
+
+                        <h4 className="font-semibold mt-2">
+                          {task.priority}
+                        </h4>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Add Member */}
+            {isAdmin && (
+              <div className="rounded-[36px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6">
+                <h2 className="text-2xl font-bold">
+                  Invite Member
+                </h2>
+
+                <p className="text-white/40 mt-2">
+                  Add new collaborators to the
+                  workspace.
+                </p>
+
+                <div className="space-y-4 mt-6">
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={memberEmail}
+                    onChange={(e) =>
+                      setMemberEmail(
+                        e.target.value
+                      )
+                    }
+                    className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none focus:border-blue-500/30 transition"
+                  />
+
+                  <button
+                    onClick={handleAddMember}
+                    className="w-full py-4 rounded-3xl bg-gradient-to-r from-blue-500 to-violet-500 font-semibold hover:scale-[1.01] transition"
+                  >
+                    Add Member
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Members */}
+            <div className="rounded-[36px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6">
+              <h2 className="text-2xl font-bold mb-6">
+                Team Members
+              </h2>
+
+              <div className="space-y-4">
+                {project.members?.map(
+                  (member) => (
+                    <div
+                      key={member._id}
+                      className="rounded-3xl border border-white/10 bg-black/20 p-5"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-lg break-words">
+                            {member.user?.name}
+                          </h3>
+
+                          <p className="text-white/50 text-sm mt-1 break-words">
+                            {
+                              member.user?.email
+                            }
+                          </p>
+                        </div>
+
+                        <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs whitespace-nowrap">
+                          {member.role}
+                        </span>
+                      </div>
+
+                      {isAdmin &&
+                        member.role !==
+                          "Admin" && (
+                          <button
+                            onClick={() => {
+                              toast(
+                                (t) => (
+                                  <div className="flex flex-col gap-4">
+                                    <p className="text-sm">
+                                      Remove this
+                                      member from
+                                      workspace?
+                                    </p>
+
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => {
+                                          handleRemoveMember(
+                                            member
+                                              .user
+                                              ._id
+                                          );
+
+                                          toast.dismiss(
+                                            t.id
+                                          );
+                                        }}
+                                        className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm"
+                                      >
+                                        Remove
+                                      </button>
+
+                                      <button
+                                        onClick={() =>
+                                          toast.dismiss(
+                                            t.id
+                                          )
+                                        }
+                                        className="px-4 py-2 rounded-xl border border-white/10 text-sm"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )
+                              );
+                            }}
+                            className="mt-5 px-4 py-2 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 hover:bg-red-500/20 transition"
+                          >
+                            Remove Member
+                          </button>
+                        )}
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Members */}
-        <div className="space-y-6">
-          {/* Add Member */}
-          <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[32px] p-6">
-            <h2 className="text-2xl font-semibold mb-5">
-              Add Member
-            </h2>
+      {/* Task Modal */}
+      {showTaskModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="w-full max-w-2xl rounded-[40px] border border-white/10 bg-[#0b1120] p-7 sm:p-10">
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <div>
+                <h2 className="text-4xl font-bold">
+                  Create Mission
+                </h2>
 
-            <div className="space-y-4">
-              <input
-                type="email"
-                placeholder="Enter member email"
-                value={memberEmail}
-                onChange={(e) =>
-                  setMemberEmail(e.target.value)
-                }
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none focus:border-indigo-500/40 transition"
-              />
+                <p className="text-white/40 mt-3">
+                  Assign a futuristic mission
+                  to your team.
+                </p>
+              </div>
 
               <button
-                onClick={handleAddMember}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 font-medium hover:scale-[1.01] transition"
+                onClick={() =>
+                  setShowTaskModal(false)
+                }
+                className="text-white/40 hover:text-white text-xl"
               >
-                Add Member
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <input
+                type="text"
+                placeholder="Mission title"
+                value={taskForm.title}
+                onChange={(e) =>
+                  setTaskForm({
+                    ...taskForm,
+                    title: e.target.value,
+                  })
+                }
+                className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+              />
+
+              <textarea
+                rows="5"
+                placeholder="Mission description"
+                value={taskForm.description}
+                onChange={(e) =>
+                  setTaskForm({
+                    ...taskForm,
+                    description:
+                      e.target.value,
+                  })
+                }
+                className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none resize-none"
+              />
+
+              <select
+                value={taskForm.assignedTo}
+                onChange={(e) =>
+                  setTaskForm({
+                    ...taskForm,
+                    assignedTo:
+                      e.target.value,
+                  })
+                }
+                className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+              >
+                <option value="">
+                  Assign Team Member
+                </option>
+
+                {project.members?.map(
+                  (member) => (
+                    <option
+                      key={
+                        member.user?._id
+                      }
+                      value={
+                        member.user?._id
+                      }
+                    >
+                      {member.user?.name}
+                    </option>
+                  )
+                )}
+              </select>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <select
+                  value={taskForm.priority}
+                  onChange={(e) =>
+                    setTaskForm({
+                      ...taskForm,
+                      priority:
+                        e.target.value,
+                    })
+                  }
+                  className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+                >
+                  <option>
+                    Low
+                  </option>
+                  <option>
+                    Medium
+                  </option>
+                  <option>
+                    High
+                  </option>
+                </select>
+
+                <select
+                  value={taskForm.status}
+                  onChange={(e) =>
+                    setTaskForm({
+                      ...taskForm,
+                      status:
+                        e.target.value,
+                    })
+                  }
+                  className="w-full rounded-3xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+                >
+                  <option>
+                    To Do
+                  </option>
+                  <option>
+                    In Progress
+                  </option>
+                  <option>
+                    Done
+                  </option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleAddTask}
+                className="w-full py-4 rounded-3xl bg-gradient-to-r from-blue-500 to-violet-500 font-semibold hover:scale-[1.01] transition"
+              >
+                Launch Mission
               </button>
             </div>
           </div>
-
-          {/* Members List */}
-          <div className="border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[32px] p-6">
-            <h2 className="text-2xl font-semibold mb-6">
-              Project Members
-            </h2>
-
-            <div className="space-y-4">
-              {project.members?.length === 0 ? (
-                <p className="text-white/50">
-                  No members found
-                </p>
-              ) : (
-                project.members.map((member) => (
-                  <div
-                    key={member._id}
-                    className="border border-white/10 bg-white/[0.03] rounded-3xl p-5 flex items-center justify-between gap-4"
-                  >
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {member.user?.name || "Unknown User"}
-                      </h3>
-
-                      <p className="text-white/40 text-sm mt-1">
-                        {member.user?.email || "No email"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className="px-4 py-2 rounded-full text-xs border border-white/10 bg-white/[0.03]">
-                        {member.role}
-                      </span>
-
-                      {member.role !== "Admin" && (
-                        <button
-                          onClick={() =>
-                            handleRemoveMember(
-                              member.user._id
-                            )
-                          }
-                          className="px-4 py-2 rounded-full text-xs border border-red-500/20 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
-      </div>
+      )}
     </div>
-
-    {/* Modal */}
-    {showTaskModal && (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-        <div className="w-full max-w-xl border border-white/10 bg-[#0f172a] rounded-[32px] p-7">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-semibold">
-                Create Task
-              </h2>
-
-              <p className="text-white/40 mt-2">
-                Add a new task to this project.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowTaskModal(false)}
-              className="text-white/40 hover:text-white transition"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-5">
-            <input
-              type="text"
-              placeholder="Task title"
-              value={taskForm.title}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  title: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none"
-            />
-
-            <textarea
-              placeholder="Task description"
-              value={taskForm.description}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  description: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none resize-none"
-              rows="4"
-            />
-
-            <select
-              value={taskForm.assignedTo}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  assignedTo: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none"
-            >
-              <option value="">Assign Member</option>
-
-              {project.members?.map((member) => (
-                <option
-                  key={member.user?._id}
-                  value={member.user?._id}
-                >
-                  {member.user?.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={taskForm.priority}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  priority: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none"
-            >
-              <option>Low</option>
-              <option>Medium</option>
-              <option>High</option>
-            </select>
-
-            <select
-              value={taskForm.status}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  status: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 outline-none"
-            >
-              <option>To Do</option>
-              <option>In Progress</option>
-              <option>Done</option>
-            </select>
-
-            <button
-              onClick={handleAddTask}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 font-medium hover:scale-[1.01] transition"
-            >
-              Create Task
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-);
+  );
 }
 
 export default ProjectDetails;

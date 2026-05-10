@@ -45,7 +45,7 @@ function Signup() {
   };
 
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden flex items-center justify-center px-4 py-10">
+    <div className="relative min-h-screen bg-black text-white overflow-hidden flex items-center justify-center px-4 py-6 sm:py-10">
       {/* Background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#312e81,transparent_35%)] opacity-40" />
 
@@ -54,19 +54,24 @@ function Signup() {
       {/* Glow */}
       <div className="absolute top-20 left-20 w-96 h-96 bg-indigo-500/20 blur-[120px] rounded-full" />
 
-      <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl shadow-black/40">
+      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 border border-white/10 bg-white/[0.03] backdrop-blur-2xl rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-2xl shadow-black/40">
         {/* Left Side */}
-        <div className="p-6 sm:p-10 lg:p-14 flex items-center">
+        <div className="p-5 sm:p-8 lg:p-14 flex items-center">
           <div className="w-full max-w-md mx-auto">
             {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-10">
-              <Link to="/" className="inline-flex items-center gap-3">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-3"
+              >
                 <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-lg">
                   F
                 </div>
 
                 <div className="text-left">
-                  <h1 className="text-2xl font-semibold">Fluxo</h1>
+                  <h1 className="text-2xl font-semibold">
+                    Fluxo
+                  </h1>
 
                   <p className="text-xs text-white/40">
                     Team Workspace
@@ -77,11 +82,11 @@ function Signup() {
 
             {/* Heading */}
             <div className="mb-10">
-              <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight leading-tight">
                 Create Account
               </h2>
 
-              <p className="text-white/50 mt-4 text-lg">
+              <p className="text-white/50 mt-4 text-base sm:text-lg">
                 Start building and managing projects with your team.
               </p>
             </div>
@@ -94,7 +99,10 @@ function Signup() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
               <div>
                 <label className="block text-sm text-white/60 mb-3">
                   Full Name
@@ -107,7 +115,7 @@ function Signup() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 sm:px-5 py-3 sm:py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
                 />
               </div>
 
@@ -123,7 +131,7 @@ function Signup() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 sm:px-5 py-3 sm:py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
                 />
               </div>
 
@@ -140,21 +148,23 @@ function Signup() {
                   onChange={handleChange}
                   required
                   minLength="6"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 sm:px-5 py-3 sm:py-4 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 py-4 font-medium hover:scale-[1.01] transition disabled:opacity-60"
+                className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 py-3 sm:py-4 font-medium hover:scale-[1.01] transition disabled:opacity-60"
               >
-                {loading ? "Creating account..." : "Create Account"}
+                {loading
+                  ? "Creating account..."
+                  : "Create Account"}
               </button>
             </form>
 
             {/* Footer */}
-            <p className="text-center mt-8 text-white/50">
+            <p className="text-center mt-8 text-white/50 text-sm sm:text-base">
               Already have an account?{" "}
               <Link
                 to="/login"
@@ -176,16 +186,21 @@ function Signup() {
         </div>
 
         {/* Right Side */}
-        <div className="hidden lg:flex flex-col justify-between border-l border-white/10 p-14">
+        <div className="hidden lg:flex flex-col justify-between border-l border-white/10 p-8 xl:p-14">
           <div>
             {/* Logo */}
-            <Link to="/" className="inline-flex items-center gap-3 mb-12">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-3 mb-12"
+            >
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/30">
                 F
               </div>
 
               <div>
-                <h1 className="text-2xl font-semibold">Fluxo</h1>
+                <h1 className="text-2xl font-semibold">
+                  Fluxo
+                </h1>
 
                 <p className="text-xs text-white/40">
                   Team Productivity Platform
@@ -193,14 +208,8 @@ function Signup() {
               </div>
             </Link>
 
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 border border-indigo-500/20 bg-indigo-500/10 rounded-full px-4 py-2 text-sm text-indigo-300 mb-10">
-              <span className="w-2 h-2 rounded-full bg-green-400" />
-              Modern Team Collaboration
-            </div>
-
             {/* Heading */}
-            <h1 className="text-6xl font-semibold tracking-tight leading-[1]">
+            <h1 className="text-4xl xl:text-6xl font-semibold tracking-tight leading-[1]">
               Build workflows
               <br />
               your team
@@ -215,17 +224,25 @@ function Signup() {
           </div>
 
           {/* Bottom Cards */}
-          <div className="grid grid-cols-2 gap-5 mt-10">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-10">
             <div className="border border-white/10 bg-white/[0.03] rounded-3xl p-6">
-              <p className="text-white/40 text-sm">Projects Created</p>
+              <p className="text-white/40 text-sm">
+                Projects Created
+              </p>
 
-              <h2 className="text-5xl font-semibold mt-3">24+</h2>
+              <h2 className="text-5xl font-semibold mt-3">
+                24+
+              </h2>
             </div>
 
             <div className="border border-white/10 bg-white/[0.03] rounded-3xl p-6">
-              <p className="text-white/40 text-sm">Active Teams</p>
+              <p className="text-white/40 text-sm">
+                Active Teams
+              </p>
 
-              <h2 className="text-5xl font-semibold mt-3">12K+</h2>
+              <h2 className="text-5xl font-semibold mt-3">
+                12K+
+              </h2>
             </div>
           </div>
         </div>
