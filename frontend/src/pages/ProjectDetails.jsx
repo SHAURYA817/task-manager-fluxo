@@ -189,7 +189,7 @@ function ProjectDetails() {
       {/* Background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#2563eb22,transparent_35%)]" />
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:70px_70px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-size-[70px_70px]" />
 
       <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 blur-[120px] rounded-full" />
 
